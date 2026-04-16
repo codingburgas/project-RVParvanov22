@@ -11,6 +11,7 @@ namespace MicrobloggingSystem.Models
         public string? MediaPath { get; set; }
         public string? MediaType { get; set; } // image, video, etc.
         public string? PostType { get; set; } // Achievement, MatchResult, Clip, TeamSearch, General
+        public string? GameTitle { get; set; }
 
         // Foreign key
         [Required]

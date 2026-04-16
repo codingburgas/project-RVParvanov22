@@ -1,31 +1,106 @@
 @model MicrobloggingSystem.Models.ViewModels.HomeViewModel
 
-<h1 class="mb-4">Microblog Feed</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/css/feed.css" asp-append-version="true" />
+}
+
+<section class="feed-hero">
+    <div>
+        <span class="feed-eyebrow">PlayerPulse Feed</span>
+        <h1>Show your form. Let scouts track it.</h1>
+        <p>Post results, clips and ranked progress across every game you play, then make it easy to scan.</p>
+    </div>
+    <div class="feed-hero-metrics">
+        <div>
+            <strong>@Model.TotalPosts</strong>
+            <span>posts on screen</span>
+        </div>
+        <div>
+            <strong>@Model.HighlightPosts</strong>
+            <span>highlight posts</span>
+        </div>
+        <div>
+            <strong>@Model.ActiveGames</strong>
+            <span>games represented</span>
+        </div>
+    </div>
+</section>
+
+@if (!Model.IsAuthenticated)
+{
+    <div class="feed-guest-banner">
+        <span>Create an account to start posting achievements and build your scout profile.</span>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Register">Register</a>
+            <a class="btn btn-outline-secondary btn-sm" asp-controller="Account" asp-action="Login">Login</a>
+        </div>
+    </div>
+}
 
 @if (!Model.Posts.Any())
 {
-    <div class="alert alert-info">No posts are available yet. Register and create your first post.</div>
+    <div class="feed-empty">No posts are available yet. Register and create your first post.</div>
 }
 else
 {
-    foreach (var post in Model.Posts)
+    <div class="feed-grid">
+    @foreach (var postCard in Model.Posts)
     {
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h5 class="card-title">@post.UserDisplayName</h5>
-                        <p class="text-muted mb-1">@post.CreatedAt.ToLocalTime().ToString("g")</p>
-                    </div>
-                    <span class="badge bg-secondary">@post.PostType ?? "General"</span>
+        var post = postCard.Post;
+        <article class="feed-card">
+            <div class="feed-card-top">
+                <div>
+                    <div class="feed-card-game">@post.GameTitle</div>
+                    <h3 class="feed-card-author">
+                        <a asp-controller="Account" asp-action="Profile" asp-route-id="@post.UserId">
+                            @post.UserDisplayName
+                        </a>
+                    </h3>
+                    <p class="feed-card-date">@post.CreatedAt.ToLocalTime().ToString("g")</p>
                 </div>
-                <p class="card-text">@post.Content</p>
-                <div class="d-flex justify-content-between small text-muted">
-                    <span>@post.CommentsCount comments</span>
-                    <span>@post.LikesCount likes</span>
-                </div>
-                <a class="btn btn-sm btn-primary mt-3" asp-controller="PostsMvc" asp-action="Details" asp-route-id="@post.Id">View post</a>
+                <span class="feed-post-type">@post.PostType ?? "General"</span>
             </div>
-        </div>
+
+            <p class="feed-card-content">@post.Content</p>
+
+            @if (!string.IsNullOrWhiteSpace(post.MediaPath) && string.Equals(post.MediaType, "video", StringComparison.OrdinalIgnoreCase))
+            {
+                <video class="post-video" controls preload="metadata">
+                    <source src="@post.MediaPath" />
+                </video>
+            }
+
+            <div class="feed-card-stats">
+                <span>@post.CommentsCount comments</span>
+                <span>@post.LikesCount likes</span>
+            </div>
+
+            <div class="feed-card-actions">
+                <a class="btn btn-sm btn-primary" asp-controller="PostsMvc" asp-action="Details" asp-route-id="@post.Id">View post</a>
+
+                @if (Model.IsAuthenticated)
+                {
+                    <form asp-controller="SocialMvc" asp-action="ToggleLike" method="post" class="d-inline">
+                        <input type="hidden" name="postId" value="@post.Id" />
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                        <button type="submit" class="btn btn-sm @(postCard.IsLikedByCurrentUser ? "btn-success" : "btn-outline-primary")">
+                            @(postCard.IsLikedByCurrentUser ? "Liked" : "Like")
+                        </button>
+                    </form>
+
+                    @if (!postCard.IsOwnPost)
+                    {
+                        <form asp-controller="SocialMvc" asp-action="ToggleFollow" method="post" class="d-inline">
+                            <input type="hidden" name="targetUserId" value="@post.UserId" />
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                            <button type="submit" class="btn btn-sm @(postCard.IsFollowingAuthor ? "btn-outline-danger" : "btn-outline-secondary")">
+                                @(postCard.IsFollowingAuthor ? "Unfollow" : "Follow")
+                            </button>
+                        </form>
+                    }
+                }
+            </div>
+        </article>
     }
+    </div>
 }

@@ -1,6 +1,10 @@
 @model IEnumerable<MicrobloggingSystem.Models.DTOs.PostResponseDto>
 
-<h1 class="mb-4">All Posts</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/css/feed.css" asp-append-version="true" />
+}
+
+<h1 class="mb-4 feed-page-title">All Posts</h1>
 
 @if (!Model.Any())
 {
@@ -10,22 +14,31 @@ else
 {
     foreach (var post in Model)
     {
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h5>@post.UserDisplayName</h5>
-                        <p class="text-muted mb-1">@post.CreatedAt.ToLocalTime().ToString("g")</p>
-                    </div>
-                    <span class="badge bg-secondary">@post.PostType ?? "General"</span>
+        <article class="feed-card">
+            <div class="feed-card-top">
+                <div>
+                    <div class="feed-card-game">@post.GameTitle</div>
+                    <h3 class="feed-card-author">
+                        <a asp-controller="Account" asp-action="Profile" asp-route-id="@post.UserId">
+                            @post.UserDisplayName
+                        </a>
+                    </h3>
+                    <p class="feed-card-date">@post.CreatedAt.ToLocalTime().ToString("g")</p>
                 </div>
-                <p>@post.Content</p>
-                <div class="d-flex justify-content-between small text-muted">
-                    <span>@post.CommentsCount comments</span>
-                    <span>@post.LikesCount likes</span>
-                </div>
-                <a class="btn btn-primary btn-sm mt-3" asp-action="Details" asp-route-id="@post.Id">View</a>
+                <span class="feed-post-type">@post.PostType ?? "General"</span>
             </div>
-        </div>
+            <p class="feed-card-content">@post.Content</p>
+            @if (!string.IsNullOrWhiteSpace(post.MediaPath) && string.Equals(post.MediaType, "video", StringComparison.OrdinalIgnoreCase))
+            {
+                <video class="post-video" controls preload="metadata">
+                    <source src="@post.MediaPath" />
+                </video>
+            }
+            <div class="feed-card-stats">
+                <span>@post.CommentsCount comments</span>
+                <span>@post.LikesCount likes</span>
+            </div>
+            <a class="btn btn-primary btn-sm mt-3" asp-action="Details" asp-route-id="@post.Id">View</a>
+        </article>
     }
 }

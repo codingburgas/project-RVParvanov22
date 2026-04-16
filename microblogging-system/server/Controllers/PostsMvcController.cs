@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
+using MicrobloggingSystem.Data;
 using MicrobloggingSystem.Interfaces;
 using MicrobloggingSystem.Models;
 using MicrobloggingSystem.Models.DTOs;
@@ -13,15 +16,21 @@ namespace MicrobloggingSystem.Controllers
         private readonly IPostService _postService;
         private readonly ICommentService _commentService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
         public PostsMvcController(
             IPostService postService,
             ICommentService commentService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            ApplicationDbContext context,
+            IWebHostEnvironment environment)
         {
             _postService = postService;
             _commentService = commentService;
             _userManager = userManager;
+            _context = context;
+            _environment = environment;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 1)
@@ -39,11 +48,17 @@ namespace MicrobloggingSystem.Controllers
             }
 
             var comments = await _commentService.GetCommentsForPostAsync(id);
+            var currentUserId = _userManager.GetUserId(User);
             var model = new PostDetailsViewModel
             {
                 Post = post,
                 Comments = comments,
-                NewComment = new CreateCommentDto { PostId = id }
+                NewComment = new CreateCommentDto { PostId = id },
+                IsOwnPost = currentUserId == post.UserId,
+                IsLikedByCurrentUser = !string.IsNullOrEmpty(currentUserId) &&
+                    await _context.PostLikes.AnyAsync(l => l.UserId == currentUserId && l.PostId == id),
+                IsFollowingAuthor = !string.IsNullOrEmpty(currentUserId) &&
+                    await _context.Follows.AnyAsync(f => f.FollowerId == currentUserId && f.FollowingId == post.UserId)
             };
 
             return View(model);
@@ -57,8 +72,10 @@ namespace MicrobloggingSystem.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Create(CreatePostDto createPostDto)
+        public async Task<IActionResult> Create(CreatePostDto createPostDto, IFormFile? videoFile)
         {
+            await AttachUploadedVideoAsync(createPostDto, videoFile);
+
             if (!ModelState.IsValid)
             {
                 return View(createPostDto);
@@ -86,6 +103,7 @@ namespace MicrobloggingSystem.Controllers
             var model = new UpdatePostDto
             {
                 Content = post.Content,
+                GameTitle = post.GameTitle ?? string.Empty,
                 PostType = post.PostType,
                 MediaPath = post.MediaPath,
                 MediaType = post.MediaType
@@ -97,7 +115,7 @@ namespace MicrobloggingSystem.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Edit(int id, UpdatePostDto updatePostDto)
+        public async Task<IActionResult> Edit(int id, UpdatePostDto updatePostDto, IFormFile? videoFile)
         {
             if (!ModelState.IsValid)
             {
@@ -114,6 +132,19 @@ namespace MicrobloggingSystem.Controllers
             if (!await CanEditPostAsync(post))
             {
                 return Forbid();
+            }
+
+            var uploadedMediaPath = await SaveUploadedVideoAsync(videoFile);
+            if (!string.IsNullOrEmpty(uploadedMediaPath))
+            {
+                DeleteExistingMedia(post.MediaPath);
+                updatePostDto.MediaPath = uploadedMediaPath;
+                updatePostDto.MediaType = "video";
+            }
+            else
+            {
+                updatePostDto.MediaPath = post.MediaPath;
+                updatePostDto.MediaType = post.MediaType;
             }
 
             var success = await _postService.UpdatePostAsync(id, updatePostDto);
@@ -142,6 +173,71 @@ namespace MicrobloggingSystem.Controllers
 
             await _postService.DeletePostAsync(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task AttachUploadedVideoAsync(CreatePostDto createPostDto, IFormFile? videoFile)
+        {
+            var uploadedMediaPath = await SaveUploadedVideoAsync(videoFile);
+            if (!string.IsNullOrEmpty(uploadedMediaPath))
+            {
+                createPostDto.MediaPath = uploadedMediaPath;
+                createPostDto.MediaType = "video";
+            }
+        }
+
+        private async Task<string?> SaveUploadedVideoAsync(IFormFile? videoFile)
+        {
+            if (videoFile == null || videoFile.Length == 0)
+            {
+                return null;
+            }
+
+            var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".mp4",
+                ".mov",
+                ".webm"
+            };
+
+            var extension = Path.GetExtension(videoFile.FileName);
+            if (!allowedExtensions.Contains(extension))
+            {
+                ModelState.AddModelError("MediaPath", "Only .mp4, .mov and .webm videos are allowed.");
+                return null;
+            }
+
+            const long maxFileSizeBytes = 100 * 1024 * 1024;
+            if (videoFile.Length > maxFileSizeBytes)
+            {
+                ModelState.AddModelError("MediaPath", "Video size must be 100MB or less.");
+                return null;
+            }
+
+            var uploadsDirectory = Path.Combine(_environment.WebRootPath, "uploads", "videos");
+            Directory.CreateDirectory(uploadsDirectory);
+
+            var safeFileName = $"{Guid.NewGuid():N}{extension}";
+            var physicalPath = Path.Combine(uploadsDirectory, safeFileName);
+
+            await using var stream = new FileStream(physicalPath, FileMode.Create);
+            await videoFile.CopyToAsync(stream);
+
+            return $"/uploads/videos/{safeFileName}";
+        }
+
+        private void DeleteExistingMedia(string? mediaPath)
+        {
+            if (string.IsNullOrWhiteSpace(mediaPath) || !mediaPath.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var relativePath = mediaPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+            var physicalPath = Path.Combine(_environment.WebRootPath, relativePath);
+            if (System.IO.File.Exists(physicalPath))
+            {
+                System.IO.File.Delete(physicalPath);
+            }
         }
 
         private async Task<bool> CanEditPostAsync(PostResponseDto post)

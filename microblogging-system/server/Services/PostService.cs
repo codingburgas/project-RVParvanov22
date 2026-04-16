@@ -50,6 +50,7 @@ namespace MicrobloggingSystem.Services
 
             var post = new Post
             {
+                GameTitle = createPostDto.GameTitle,
                 Content = createPostDto.Content,
                 PostType = createPostDto.PostType,
                 MediaPath = createPostDto.MediaPath,
@@ -72,6 +73,7 @@ namespace MicrobloggingSystem.Services
             }
 
             post.Content = updatePostDto.Content;
+            post.GameTitle = updatePostDto.GameTitle;
             post.PostType = updatePostDto.PostType ?? post.PostType;
             post.MediaPath = updatePostDto.MediaPath ?? post.MediaPath;
             post.MediaType = updatePostDto.MediaType ?? post.MediaType;
@@ -99,8 +101,13 @@ namespace MicrobloggingSystem.Services
                 .Select(f => f.FollowingId)
                 .ToListAsync();
 
+            if (followedIds.Count == 0)
+            {
+                return await GetPostsAsync(pageNumber, pageSize);
+            }
+
             var posts = await _context.Posts
-                .Where(p => followedIds.Contains(p.UserId))
+                .Where(p => followedIds.Contains(p.UserId) || p.UserId == userId)
                 .Include(p => p.User)
                 .Include(p => p.Comments)
                 .Include(p => p.PostLikes)
@@ -122,6 +129,7 @@ namespace MicrobloggingSystem.Services
             return new PostResponseDto
             {
                 Id = post.Id,
+                GameTitle = post.GameTitle,
                 Content = post.Content,
                 PostType = post.PostType,
                 MediaPath = post.MediaPath,

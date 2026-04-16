@@ -1,0 +1,441 @@
+/* Profile Page Styling */
+
+.profile-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(98, 114, 164, 0.3);
+}
+
+.profile-header {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    align-items: flex-start;
+}
+
+.profile-avatar-section {
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 3px solid #6272a4;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.profile-avatar-placeholder {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6272a4 0%, #44475a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f8f8f2;
+    border: 3px solid #6272a4;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.profile-avatar-placeholder svg {
+    width: 70px;
+    height: 70px;
+}
+
+.profile-info-section {
+    flex: 1;
+}
+
+.profile-display-name {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f8f8f2;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: 0.5px;
+}
+
+.profile-email {
+    color: #8be9fd;
+    font-size: 1rem;
+    margin: 0.25rem 0;
+}
+
+.profile-region {
+    color: #50fa7b;
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+}
+
+.profile-bio {
+    color: #d0d0d0;
+    font-size: 0.95rem;
+    margin-top: 1rem;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    background: rgba(98, 114, 164, 0.1);
+    border: 1px solid rgba(98, 114, 164, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    background: rgba(98, 114, 164, 0.2);
+    border-color: rgba(98, 114, 164, 0.6);
+    transform: translateY(-2px);
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #50fa7b;
+}
+
+.stat-label {
+    color: #b0b0b0;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-meta {
+    color: #b0b0b0;
+    font-size: 0.9rem;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(98, 114, 164, 0.3);
+    border-bottom: 1px solid rgba(98, 114, 164, 0.3);
+}
+
+.profile-meta strong {
+    color: #f8f8f2;
+}
+
+.games-section,
+.recent-posts-section {
+    margin-top: 2rem;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 1rem;
+}
+
+.section-heading h2 {
+    margin: 0.25rem 0 0;
+    color: #f8f8f2;
+    font-size: 1.35rem;
+}
+
+.section-heading p {
+    margin: 0;
+    color: #b0b0b0;
+    max-width: 380px;
+    text-align: right;
+}
+
+.eyebrow {
+    color: #8be9fd;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.game-card {
+    border-radius: 12px;
+    padding: 1.15rem;
+    border: 1px solid rgba(98, 114, 164, 0.25);
+    background: rgba(15, 20, 35, 0.85);
+}
+
+.game-card-active {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.game-card-idle {
+    opacity: 0.88;
+}
+
+.game-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: start;
+}
+
+.game-card-top h3 {
+    margin: 0;
+    color: #f8f8f2;
+    font-size: 1.05rem;
+}
+
+.game-card-top p {
+    margin: 0.35rem 0 0;
+    color: #b0b0b0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.game-status {
+    padding: 0.35rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(139, 233, 253, 0.12);
+    color: #8be9fd;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.game-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.game-metrics div {
+    padding: 0.75rem 0.5rem;
+    border-radius: 10px;
+    background: rgba(98, 114, 164, 0.12);
+    text-align: center;
+}
+
+.game-metrics strong {
+    display: block;
+    color: #50fa7b;
+    font-size: 1.05rem;
+}
+
+.game-metrics span {
+    color: #b0b0b0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.game-highlights {
+    margin: 0;
+    padding-left: 1rem;
+    color: #e7e7e7;
+}
+
+.game-highlights li + li {
+    margin-top: 0.45rem;
+}
+
+.game-empty {
+    margin: 0;
+    color: #9aa2c0;
+    font-size: 0.92rem;
+}
+
+.recent-posts-list {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.recent-post-card {
+    display: block;
+    padding: 1rem 1.1rem;
+    border-radius: 10px;
+    background: rgba(98, 114, 164, 0.1);
+    border: 1px solid rgba(98, 114, 164, 0.22);
+    text-decoration: none;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.recent-post-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(139, 233, 253, 0.45);
+}
+
+.recent-post-link {
+    text-decoration: none;
+}
+
+.recent-post-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+    font-size: 0.8rem;
+}
+
+.recent-post-type {
+    color: #50fa7b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.recent-post-date {
+    color: #9aa2c0;
+}
+
+.recent-post-card p {
+    margin: 0;
+    color: #f2f2f2;
+}
+
+.post-video-compact {
+    margin-top: 0.85rem;
+    max-height: 280px;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #50fa7b 0%, #39da8a 100%);
+    color: #1a1a2e;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(80, 250, 123, 0.3);
+}
+
+.btn-secondary {
+    background: rgba(98, 114, 164, 0.3);
+    color: #8be9fd;
+    border: 1px solid rgba(98, 114, 164, 0.5);
+}
+
+.btn-secondary:hover {
+    background: rgba(98, 114, 164, 0.5);
+    border-color: rgba(98, 114, 164, 0.8);
+    transform: translateY(-2px);
+}
+
+.modal-dark {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(98, 114, 164, 0.3);
+    color: #f8f8f2;
+}
+
+.modal-dark .modal-header {
+    border-bottom: 1px solid rgba(98, 114, 164, 0.3);
+}
+
+.modal-dark .modal-title {
+    color: #f8f8f2;
+}
+
+.modal-dark .btn-close {
+    filter: invert(1);
+}
+
+.profile-edit-form label {
+    color: #f8f8f2;
+    font-weight: 600;
+}
+
+.profile-edit-form .form-control {
+    background: rgba(255, 255, 255, 0.96);
+    color: #111827;
+    border: 1px solid rgba(139, 233, 253, 0.2);
+}
+
+.profile-edit-form .form-control:focus {
+    background: #ffffff;
+    color: #111827;
+}
+
+.text-muted {
+    color: #b0b0b0 !important;
+}
+
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .section-heading {
+        flex-direction: column;
+        align-items: start;
+    }
+
+    .section-heading p {
+        max-width: none;
+        text-align: left;
+    }
+
+    .profile-display-name {
+        font-size: 1.5rem;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+
+    .profile-avatar-placeholder {
+        width: 100px;
+        height: 100px;
+    }
+
+    .profile-avatar-placeholder svg {
+        width: 50px;
+        height: 50px;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+    }
+
+    .game-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .recent-post-card-top {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

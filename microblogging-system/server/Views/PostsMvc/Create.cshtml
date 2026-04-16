@@ -1,22 +1,62 @@
 @model MicrobloggingSystem.Models.DTOs.CreatePostDto
 
-<h1 class="mb-4">Create New Post</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/css/feed.css" asp-append-version="true" />
+}
 
-<form asp-action="Create" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-    <div class="mb-3">
-        <label asp-for="Content" class="form-label"></label>
-        <textarea asp-for="Content" class="form-control" rows="4" maxlength="280"></textarea>
-        <div class="form-text">Max 280 characters.</div>
-        <span asp-validation-for="Content" class="text-danger"></span>
+<section class="editor-shell">
+    <div class="editor-header">
+        <span class="feed-eyebrow">Create Post</span>
+        <h1>Share a result, highlight or team-up update.</h1>
+        <p>Pick the game first so your post stays attached to the right identity in your profile.</p>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="PostType" class="form-label"></label>
-        <input asp-for="PostType" class="form-control" placeholder="General, Announcement, Question" />
-        <span asp-validation-for="PostType" class="text-danger"></span>
-    </div>
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="editor-form auth-form-shell">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <button type="submit" class="btn btn-success">Submit</button>
-</form>
+        <div class="mb-3">
+            <label asp-for="GameTitle" class="form-label auth-form-label">Game</label>
+            <select asp-for="GameTitle" class="form-select">
+                <option value="">Choose a game</option>
+                <option>Valorant</option>
+                <option>Counter-Strike 2</option>
+                <option>League of Legends</option>
+                <option>Fortnite</option>
+                <option>Rocket League</option>
+                <option>Other</option>
+            </select>
+            <span asp-validation-for="GameTitle" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="PostType" class="form-label auth-form-label">Post Type</label>
+            <select asp-for="PostType" class="form-select">
+                <option>Achievement</option>
+                <option>MatchResult</option>
+                <option>Clip</option>
+                <option>TeamSearch</option>
+                <option>General</option>
+            </select>
+            <span asp-validation-for="PostType" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Content" class="form-label auth-form-label"></label>
+            <textarea asp-for="Content" class="form-control" rows="6" maxlength="280" placeholder="Example: Hit Immortal 3 today with two 30-bomb games and uploaded a short clutch montage."></textarea>
+            <div class="form-text">Max 280 characters.</div>
+            <span asp-validation-for="Content" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label auth-form-label" for="videoFile">Video Upload</label>
+            <input id="videoFile" name="videoFile" class="form-control" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" />
+            <div class="form-text">Optional. Supported formats: MP4, MOV, WEBM. Max 100MB.</div>
+            <span asp-validation-for="MediaPath" class="text-danger"></span>
+        </div>
+
+        <div class="editor-actions">
+            <button type="submit" class="btn btn-success">Publish Post</button>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</section>

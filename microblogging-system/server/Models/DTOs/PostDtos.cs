@@ -4,6 +4,8 @@ namespace MicrobloggingSystem.Models.DTOs
 {
     public class CreatePostDto
     {
+        [Required]
+        public string GameTitle { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public string? PostType { get; set; }
         public string? MediaPath { get; set; }
@@ -17,6 +19,8 @@ namespace MicrobloggingSystem.Models.DTOs
         [StringLength(280, ErrorMessage = "Post content must be 280 characters or less")]
         public string Content { get; set; } = string.Empty;
 
+        [Required]
+        public string GameTitle { get; set; } = string.Empty;
         public string? PostType { get; set; }
         public string? MediaPath { get; set; }
         public string? MediaType { get; set; }
@@ -25,6 +29,7 @@ namespace MicrobloggingSystem.Models.DTOs
     public class PostResponseDto
     {
         public int Id { get; set; }
+        public string? GameTitle { get; set; }
         public string Content { get; set; } = string.Empty;
         public string? PostType { get; set; }
         public string? MediaPath { get; set; }

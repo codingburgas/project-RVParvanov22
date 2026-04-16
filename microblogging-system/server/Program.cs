@@ -49,8 +49,10 @@ builder.Services.AddAuthentication()
 
 // Register application services
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<ILikeService, LikeService>();
 
 // Add CORS
 builder.Services.AddCors(options =>

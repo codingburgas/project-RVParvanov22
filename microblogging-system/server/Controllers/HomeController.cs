@@ -28,20 +28,48 @@ namespace MicrobloggingSystem.Controllers
         public async Task<IActionResult> Index(int pageNumber = 1)
         {
             IEnumerable<PostResponseDto> posts;
+            var currentUserId = _userManager.GetUserId(User);
+            var likedPostIds = new HashSet<int>();
+            var followingUserIds = new HashSet<string>();
             if (User.Identity?.IsAuthenticated == true)
             {
-                var userId = _userManager.GetUserId(User) ?? string.Empty;
+                var userId = currentUserId ?? string.Empty;
                 posts = await _postService.GetFeedAsync(userId, pageNumber, 20);
+                likedPostIds = await _context.PostLikes
+                    .Where(l => l.UserId == userId)
+                    .Select(l => l.PostId)
+                    .ToHashSetAsync();
+                followingUserIds = await _context.Follows
+                    .Where(f => f.FollowerId == userId)
+                    .Select(f => f.FollowingId)
+                    .ToHashSetAsync();
             }
             else
             {
                 posts = await _postService.GetPostsAsync(pageNumber, 20);
             }
 
+            var postCards = posts
+                .Select(post => new FeedPostViewModel
+                {
+                    Post = post,
+                    IsLikedByCurrentUser = likedPostIds.Contains(post.Id),
+                    IsFollowingAuthor = followingUserIds.Contains(post.UserId),
+                    IsOwnPost = currentUserId == post.UserId
+                })
+                .ToList();
+
             var model = new HomeViewModel
             {
-                Posts = posts,
-                IsAuthenticated = User.Identity?.IsAuthenticated == true
+                Posts = postCards,
+                IsAuthenticated = User.Identity?.IsAuthenticated == true,
+                TotalPosts = postCards.Count,
+                HighlightPosts = postCards.Count(p => string.Equals(p.Post.PostType, "Clip", StringComparison.OrdinalIgnoreCase) || string.Equals(p.Post.PostType, "Achievement", StringComparison.OrdinalIgnoreCase)),
+                ActiveGames = postCards
+                    .Select(p => p.Post.GameTitle)
+                    .Where(game => !string.IsNullOrWhiteSpace(game))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Count()
             };
 
             return View(model);

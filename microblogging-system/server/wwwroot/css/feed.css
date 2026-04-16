@@ -1,0 +1,224 @@
+.feed-eyebrow {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    color: #2563eb;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.feed-hero,
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    align-items: end;
+    margin-bottom: 1.5rem;
+    padding: 1.75rem;
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at top right, rgba(80, 250, 123, 0.18), transparent 28%),
+        linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+}
+
+.feed-hero h1,
+.editor-header h1,
+.feed-page-title {
+    margin: 0;
+    font-weight: 800;
+}
+
+.feed-hero p,
+.editor-header p {
+    margin: 0.85rem 0 0;
+    max-width: 640px;
+    color: rgba(248, 250, 252, 0.78);
+}
+
+.feed-hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    min-width: 320px;
+}
+
+.feed-hero-metrics div {
+    border-radius: 16px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(139, 233, 253, 0.12);
+}
+
+.feed-hero-metrics strong {
+    display: block;
+    font-size: 1.5rem;
+}
+
+.feed-hero-metrics span {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.85rem;
+}
+
+.feed-guest-banner,
+.feed-empty {
+    padding: 1rem 1.15rem;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #dbe4f0;
+    color: #0f172a;
+    margin-bottom: 1.25rem;
+}
+
+.feed-guest-banner {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+}
+
+.feed-grid {
+    display: grid;
+    gap: 1.15rem;
+}
+
+.feed-card {
+    background: #ffffff;
+    border: 1px solid #dbe4f0;
+    border-radius: 18px;
+    padding: 1.25rem;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+}
+
+.feed-card-detail {
+    margin-bottom: 1.5rem;
+}
+
+.feed-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: start;
+}
+
+.feed-card-game {
+    display: inline-block;
+    margin-bottom: 0.45rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    background: #eef4ff;
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.feed-card-author {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.feed-card-author a {
+    color: #0f172a;
+    text-decoration: none;
+}
+
+.feed-card-author a:hover {
+    color: #1d4ed8;
+}
+
+.feed-card-date {
+    margin: 0.35rem 0 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.feed-post-type {
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: #0f172a;
+    color: #f8fafc;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.feed-card-content {
+    margin: 1rem 0;
+    color: #0f172a;
+    line-height: 1.65;
+    font-size: 1rem;
+}
+
+.post-video {
+    width: 100%;
+    max-height: 460px;
+    border-radius: 16px;
+    background: #020617;
+    margin: 0.35rem 0 0.85rem;
+}
+
+.feed-card-stats {
+    display: flex;
+    gap: 1rem;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.feed-card-actions,
+.editor-actions {
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.comment-section {
+    margin-top: 1.5rem;
+}
+
+.comment-list {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.comment-card {
+    background: #ffffff;
+    border: 1px solid #dbe4f0;
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+}
+
+.editor-shell {
+    max-width: 860px;
+}
+
+.editor-form .form-select,
+.editor-form .form-control {
+    color: #111827;
+}
+
+@media (max-width: 900px) {
+    .feed-hero,
+    .editor-header {
+        flex-direction: column;
+        align-items: start;
+    }
+
+    .feed-hero-metrics {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .feed-card-top,
+    .feed-guest-banner {
+        flex-direction: column;
+        align-items: start;
+    }
+
+    .feed-hero-metrics {
+        grid-template-columns: 1fr;
+    }
+}

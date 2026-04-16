@@ -1,0 +1,236 @@
+@model UserProfileViewModel
+
+@{
+    ViewBag.Title = Model.IsCurrentUser ? "My Profile" : $"{Model.DisplayName} Profile";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/profile.css" asp-append-version="true" />
+}
+
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar-section">
+            @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+            {
+                <img src="@Model.ProfilePictureUrl" alt="@Model.DisplayName" class="profile-avatar" />
+            }
+            else
+            {
+                <div class="profile-avatar-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+            }
+        </div>
+        <div class="profile-info-section">
+            <h1 class="profile-display-name">@Model.DisplayName</h1>
+            <p class="profile-email">@Model.Email</p>
+            @if (!string.IsNullOrEmpty(Model.Region))
+            {
+                <p class="profile-region">
+                    <i class="fas fa-map-marker-alt"></i> @Model.Region
+                </p>
+            }
+            @if (!string.IsNullOrEmpty(Model.Bio))
+            {
+                <p class="profile-bio">@Model.Bio</p>
+            }
+        </div>
+    </div>
+
+    <div class="profile-stats">
+        <div class="stat-card">
+            <div class="stat-number">@Model.PostsCount</div>
+            <div class="stat-label">Posts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@Model.FollowersCount</div>
+            <div class="stat-label">Followers</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@Model.FollowingCount</div>
+            <div class="stat-label">Following</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@Model.ActiveGamesCount</div>
+            <div class="stat-label">Active Games</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@Model.TotalHighlightsCount</div>
+            <div class="stat-label">Highlights</div>
+        </div>
+    </div>
+
+    <div class="profile-meta">
+        <p>Member since: <strong>@Model.CreatedAt.ToString("MMMM dd, yyyy")</strong></p>
+    </div>
+
+    <section class="games-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">Scout View</span>
+                <h2>Games in this profile</h2>
+            </div>
+            <p>When a scout opens an account, they can scan every supported game in one place.</p>
+        </div>
+
+        <div class="games-grid">
+            @foreach (var game in Model.Games)
+            {
+                <article class="game-card @(game.HighlightCount > 0 ? "game-card-active" : "game-card-idle")">
+                    <div class="game-card-top">
+                        <div>
+                            <h3>@game.GameName</h3>
+                            <p>@game.Tagline</p>
+                        </div>
+                        <span class="game-status">@game.StatusLabel</span>
+                    </div>
+
+                    <div class="game-metrics">
+                        <div>
+                            <strong>@game.HighlightCount</strong>
+                            <span>posts</span>
+                        </div>
+                        <div>
+                            <strong>@game.AchievementCount</strong>
+                            <span>results</span>
+                        </div>
+                        <div>
+                            <strong>@game.TotalLikes</strong>
+                            <span>likes</span>
+                        </div>
+                        <div>
+                            <strong>@game.TotalComments</strong>
+                            <span>comments</span>
+                        </div>
+                    </div>
+
+                    @if (game.TopMoments.Any())
+                    {
+                        <ul class="game-highlights">
+                            @foreach (var moment in game.TopMoments)
+                            {
+                                <li>@moment</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="game-empty">This player still has no uploaded highlights for @game.GameName.</p>
+                    }
+                </article>
+            }
+        </div>
+    </section>
+
+    <section class="recent-posts-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">Recent Activity</span>
+                <h2>Latest posts</h2>
+            </div>
+        </div>
+
+        @if (Model.RecentPosts.Any())
+        {
+            <div class="recent-posts-list">
+                @foreach (var post in Model.RecentPosts)
+                {
+                    <div class="recent-post-card">
+                        <div class="recent-post-card-top">
+                            <span class="recent-post-type">@post.GameTitle · @(post.PostType ?? "General")</span>
+                            <span class="recent-post-date">@post.CreatedAt.ToLocalTime().ToString("g")</span>
+                        </div>
+                        <a class="recent-post-link" asp-controller="PostsMvc" asp-action="Details" asp-route-id="@post.Id">
+                            <p>@post.Content</p>
+                        </a>
+                        @if (!string.IsNullOrWhiteSpace(post.MediaPath) && string.Equals(post.MediaType, "video", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <video class="post-video post-video-compact" controls preload="metadata">
+                                <source src="@post.MediaPath" />
+                            </video>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="game-empty">No posts yet.</p>
+        }
+    </section>
+
+    <div class="profile-actions">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Feed
+        </a>
+        @if (Model.IsCurrentUser)
+        {
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="fas fa-edit"></i> Edit Profile
+            </button>
+        }
+        else if (Model.CanFollow)
+        {
+            <form asp-controller="SocialMvc" asp-action="ToggleFollow" method="post">
+                <input type="hidden" name="targetUserId" value="@Model.Id" />
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                <button type="submit" class="btn @(Model.IsFollowingUser ? "btn-secondary" : "btn-primary")">
+                    <i class="fas @(Model.IsFollowingUser ? "fa-user-minus" : "fa-user-plus")"></i>
+                    @(Model.IsFollowingUser ? "Unfollow" : "Follow Player")
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (Model.IsCurrentUser)
+{
+    <div class="modal fade" id="editProfileModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content modal-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form asp-action="UpdateProfile" method="post" class="profile-edit-form">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="EditProfile.DisplayName" class="form-label"></label>
+                            <input asp-for="EditProfile.DisplayName" class="form-control" />
+                            <span asp-validation-for="EditProfile.DisplayName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EditProfile.Region" class="form-label"></label>
+                            <input asp-for="EditProfile.Region" class="form-control" placeholder="EU / NA / EMEA / Sofia" />
+                            <span asp-validation-for="EditProfile.Region" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EditProfile.ProfilePictureUrl" class="form-label"></label>
+                            <input asp-for="EditProfile.ProfilePictureUrl" class="form-control" placeholder="https://..." />
+                            <span asp-validation-for="EditProfile.ProfilePictureUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EditProfile.Bio" class="form-label"></label>
+                            <textarea asp-for="EditProfile.Bio" class="form-control" rows="4" maxlength="250"></textarea>
+                            <span asp-validation-for="EditProfile.Bio" class="text-danger"></span>
+                        </div>
+
+                        <div class="modal-footer px-0 pb-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}

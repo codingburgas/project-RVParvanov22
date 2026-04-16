@@ -1,23 +1,68 @@
 @model MicrobloggingSystem.Models.DTOs.UpdatePostDto
 
-<h1 class="mb-4">Edit Post</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/css/feed.css" asp-append-version="true" />
+}
 
-<form asp-action="Edit" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <input type="hidden" name="id" value="@ViewBag.PostId" />
-
-    <div class="mb-3">
-        <label asp-for="Content" class="form-label"></label>
-        <textarea asp-for="Content" class="form-control" rows="4" maxlength="280"></textarea>
-        <div class="form-text">Max 280 characters.</div>
-        <span asp-validation-for="Content" class="text-danger"></span>
+<section class="editor-shell">
+    <div class="editor-header">
+        <span class="feed-eyebrow">Update Post</span>
+        <h1>Edit your update.</h1>
+        <p>Keep the right game and post type so your profile still reads clearly for a scout.</p>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="PostType" class="form-label"></label>
-        <input asp-for="PostType" class="form-control" />
-        <span asp-validation-for="PostType" class="text-danger"></span>
-    </div>
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="editor-form auth-form-shell">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" name="id" value="@ViewBag.PostId" />
 
-    <button type="submit" class="btn btn-success">Save changes</button>
-</form>
+        <div class="mb-3">
+            <label asp-for="GameTitle" class="form-label auth-form-label">Game</label>
+            <select asp-for="GameTitle" class="form-select">
+                <option>Valorant</option>
+                <option>Counter-Strike 2</option>
+                <option>League of Legends</option>
+                <option>Fortnite</option>
+                <option>Rocket League</option>
+                <option>Other</option>
+            </select>
+            <span asp-validation-for="GameTitle" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="PostType" class="form-label auth-form-label">Post Type</label>
+            <select asp-for="PostType" class="form-select">
+                <option>Achievement</option>
+                <option>MatchResult</option>
+                <option>Clip</option>
+                <option>TeamSearch</option>
+                <option>General</option>
+            </select>
+            <span asp-validation-for="PostType" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Content" class="form-label auth-form-label"></label>
+            <textarea asp-for="Content" class="form-control" rows="6" maxlength="280"></textarea>
+            <div class="form-text">Max 280 characters.</div>
+            <span asp-validation-for="Content" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label auth-form-label" for="videoFile">Replace Video</label>
+            <input id="videoFile" name="videoFile" class="form-control" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" />
+            <div class="form-text">Leave empty to keep the current video. Supported formats: MP4, MOV, WEBM. Max 100MB.</div>
+            @if (!string.IsNullOrWhiteSpace(Model.MediaPath) && string.Equals(Model.MediaType, "video", StringComparison.OrdinalIgnoreCase))
+            {
+                <video class="post-video mt-3" controls preload="metadata">
+                    <source src="@Model.MediaPath" />
+                </video>
+            }
+            <span asp-validation-for="MediaPath" class="text-danger"></span>
+        </div>
+
+        <div class="editor-actions">
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <a asp-action="Details" asp-route-id="@ViewBag.PostId" class="btn btn-outline-secondary">Back</a>
+        </div>
+    </form>
+</section>
