@@ -113,7 +113,7 @@ namespace MicrobloggingSystem.Services
         /// <summary>
         /// Search users by display name, username, or region
         /// </summary>
-        public async Task<IEnumerable<UserSearchResultDto>> SearchUsersAsync(string query, int pageNumber = 1, int pageSize = 20)
+        public async Task<IEnumerable<UserSearchResultDto>> SearchUsersAsync(string query, string? currentUserId = null, int pageNumber = 1, int pageSize = 20)
         {
             try
             {
@@ -134,6 +134,17 @@ namespace MicrobloggingSystem.Services
                     .Take(pageSize)
                     .ToListAsync();
 
+                // Get follow relationships for current user if provided
+                var followingIds = new HashSet<string>();
+                if (!string.IsNullOrEmpty(currentUserId))
+                {
+                    followingIds = (await _context.Follows
+                        .Where(f => f.FollowerId == currentUserId)
+                        .Select(f => f.FollowingId)
+                        .ToListAsync())
+                        .ToHashSet();
+                }
+
                 return users.Select(user => new UserSearchResultDto
                 {
                     Id = user.Id,
@@ -141,7 +152,7 @@ namespace MicrobloggingSystem.Services
                     ProfilePictureUrl = user.ProfilePictureUrl,
                     Region = user.Region,
                     FollowersCount = user.Followers?.Count ?? 0,
-                    IsFollowing = false // This would need current user context to determine
+                    IsFollowing = followingIds.Contains(user.Id)
                 }).ToList();
             }
             catch (Exception ex)

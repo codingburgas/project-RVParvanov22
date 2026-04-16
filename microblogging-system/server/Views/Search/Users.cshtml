@@ -87,6 +87,18 @@
                                                         </small>
                                                     </div>
                                                 </div>
+
+                                                @if (User.Identity?.IsAuthenticated == true)
+                                                {
+                                                    <form asp-controller="SocialMvc" asp-action="ToggleFollow" method="post" class="ms-2">
+                                                        <input type="hidden" name="targetUserId" value="@user.Id" />
+                                                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                                        <button type="submit" class="btn btn-sm @(user.IsFollowing ? "btn-outline-secondary" : "btn-outline-primary")">
+                                                            <i class="fas @(user.IsFollowing ? "fa-user-minus" : "fa-user-plus")"></i>
+                                                            @(user.IsFollowing ? "Unfollow" : "Follow")
+                                                        </button>
+                                                    </form>
+                                                }
                                             </div>
                                         </div>
                                     </div>

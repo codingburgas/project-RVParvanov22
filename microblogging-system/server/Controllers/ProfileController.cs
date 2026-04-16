@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MicrobloggingSystem.Data;
 using MicrobloggingSystem.Interfaces;
+using MicrobloggingSystem.Models;
 using MicrobloggingSystem.Models.DTOs;
 using MicrobloggingSystem.Services;
 using System.Security.Claims;
@@ -12,11 +15,16 @@ namespace MicrobloggingSystem.Controllers
     public class ProfileController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<ProfileController> _logger;
 
-        public ProfileController(IUserService userService, ILogger<ProfileController> logger)
+        public ProfileController(
+            IUserService userService,
+            ApplicationDbContext context,
+            ILogger<ProfileController> logger)
         {
             _userService = userService;
+            _context = context;
             _logger = logger;
         }
 
@@ -136,6 +144,134 @@ namespace MicrobloggingSystem.Controllers
             {
                 _logger.LogError(ex, "Error updating user profile");
                 return StatusCode(500, new { error = "An error occurred while updating profile" });
+            }
+        }
+
+        /// <summary>
+        /// POST /api/profile/follow/{targetUserId}
+        /// Follow a user
+        /// Requires: [Authorize]
+        /// </summary>
+        [HttpPost("follow/{targetUserId}")]
+        [Authorize]
+        public async Task<ActionResult> FollowUser(string targetUserId)
+        {
+            try
+            {
+                var currentUserId = GetUserIdFromClaims();
+                if (string.IsNullOrEmpty(currentUserId))
+                {
+                    return Unauthorized(new { error = "Invalid token claims" });
+                }
+
+                if (currentUserId == targetUserId)
+                {
+                    return BadRequest(new { error = "Cannot follow yourself" });
+                }
+
+                // Check if target user exists
+                var targetUser = await _context.Users.FindAsync(targetUserId);
+                if (targetUser == null)
+                {
+                    return NotFound(new { error = "User not found" });
+                }
+
+                // Check if already following
+                var existingFollow = await _context.Follows
+                    .FirstOrDefaultAsync(f => f.FollowerId == currentUserId && f.FollowingId == targetUserId);
+
+                if (existingFollow != null)
+                {
+                    return BadRequest(new { error = "Already following this user" });
+                }
+
+                // Create follow relationship
+                var follow = new Follow
+                {
+                    FollowerId = currentUserId,
+                    FollowingId = targetUserId,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Follows.Add(follow);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("User {FollowerId} followed user {FollowingId}", currentUserId, targetUserId);
+                return Ok(new { message = "Successfully followed user" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error following user {TargetUserId}", targetUserId);
+                return StatusCode(500, new { error = "An error occurred while following user" });
+            }
+        }
+
+        /// <summary>
+        /// DELETE /api/profile/follow/{targetUserId}
+        /// Unfollow a user
+        /// Requires: [Authorize]
+        /// </summary>
+        [HttpDelete("follow/{targetUserId}")]
+        [Authorize]
+        public async Task<ActionResult> UnfollowUser(string targetUserId)
+        {
+            try
+            {
+                var currentUserId = GetUserIdFromClaims();
+                if (string.IsNullOrEmpty(currentUserId))
+                {
+                    return Unauthorized(new { error = "Invalid token claims" });
+                }
+
+                // Find existing follow relationship
+                var existingFollow = await _context.Follows
+                    .FirstOrDefaultAsync(f => f.FollowerId == currentUserId && f.FollowingId == targetUserId);
+
+                if (existingFollow == null)
+                {
+                    return BadRequest(new { error = "Not following this user" });
+                }
+
+                // Remove follow relationship
+                _context.Follows.Remove(existingFollow);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("User {FollowerId} unfollowed user {FollowingId}", currentUserId, targetUserId);
+                return Ok(new { message = "Successfully unfollowed user" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error unfollowing user {TargetUserId}", targetUserId);
+                return StatusCode(500, new { error = "An error occurred while unfollowing user" });
+            }
+        }
+
+        /// <summary>
+        /// GET /api/profile/follow/{targetUserId}/status
+        /// Check if current user is following target user
+        /// Requires: [Authorize]
+        /// </summary>
+        [HttpGet("follow/{targetUserId}/status")]
+        [Authorize]
+        public async Task<ActionResult> GetFollowStatus(string targetUserId)
+        {
+            try
+            {
+                var currentUserId = GetUserIdFromClaims();
+                if (string.IsNullOrEmpty(currentUserId))
+                {
+                    return Unauthorized(new { error = "Invalid token claims" });
+                }
+
+                var isFollowing = await _context.Follows
+                    .AnyAsync(f => f.FollowerId == currentUserId && f.FollowingId == targetUserId);
+
+                return Ok(new { isFollowing });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking follow status for user {TargetUserId}", targetUserId);
+                return StatusCode(500, new { error = "An error occurred while checking follow status" });
             }
         }
 

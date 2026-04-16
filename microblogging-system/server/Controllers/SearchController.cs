@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MicrobloggingSystem.Interfaces;
+using MicrobloggingSystem.Models;
 using MicrobloggingSystem.Models.DTOs;
 
 namespace MicrobloggingSystem.Controllers
@@ -13,15 +15,18 @@ namespace MicrobloggingSystem.Controllers
     {
         private readonly IUserService _userService;
         private readonly IPostService _postService;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<SearchController> _logger;
 
         public SearchController(
             IUserService userService,
             IPostService postService,
+            UserManager<ApplicationUser> userManager,
             ILogger<SearchController> logger)
         {
             _userService = userService;
             _postService = postService;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -52,7 +57,8 @@ namespace MicrobloggingSystem.Controllers
 
             try
             {
-                var users = await _userService.SearchUsersAsync(q, page, pageSize);
+                var currentUserId = _userManager.GetUserId(User);
+                var users = await _userService.SearchUsersAsync(q, currentUserId, page, pageSize);
                 ViewBag.Query = q;
                 ViewBag.Page = page;
                 ViewBag.PageSize = pageSize;
