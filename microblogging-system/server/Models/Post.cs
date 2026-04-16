@@ -13,6 +13,10 @@ namespace MicrobloggingSystem.Models
         public string? PostType { get; set; } // Achievement, MatchResult, Clip, TeamSearch, General
         public string? GameTitle { get; set; }
 
+        // Draft functionality
+        public bool IsDraft { get; set; } = false;
+        public DateTime? PublishedAt { get; set; }
+
         // Foreign key
         [Required]
         public string UserId { get; set; } = string.Empty;

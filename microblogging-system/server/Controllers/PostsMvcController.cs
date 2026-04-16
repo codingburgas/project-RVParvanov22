@@ -73,7 +73,7 @@ namespace MicrobloggingSystem.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Create(CreatePostDto createPostDto, IFormFile? videoFile)
+        public async Task<IActionResult> Create(CreatePostDto createPostDto, IFormFile? videoFile, bool saveAsDraft = false)
         {
             await AttachUploadedVideoAsync(createPostDto, videoFile);
 
@@ -83,8 +83,53 @@ namespace MicrobloggingSystem.Controllers
             }
 
             createPostDto.UserId = _userManager.GetUserId(User) ?? string.Empty;
+            createPostDto.IsDraft = saveAsDraft;
             var createdPost = await _postService.CreatePostAsync(createPostDto);
+
+            if (saveAsDraft)
+            {
+                return RedirectToAction(nameof(Drafts));
+            }
+
             return RedirectToAction(nameof(Details), new { id = createdPost.Id });
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Drafts(int pageNumber = 1)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var drafts = await _postService.GetDraftsAsync(userId, pageNumber, 20);
+            ViewBag.CurrentUserId = userId;
+            return View(drafts);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> PublishDraft(int id)
+        {
+            var post = await _postService.GetPostByIdAsync(id);
+            if (post == null)
+            {
+                return NotFound();
+            }
+
+            if (!await CanEditPostAsync(post))
+            {
+                return Forbid();
+            }
+
+            var success = await _postService.PublishDraftAsync(id);
+            if (!success)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         [Authorize]

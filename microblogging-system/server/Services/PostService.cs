@@ -18,10 +18,11 @@ namespace MicrobloggingSystem.Services
         public async Task<IEnumerable<PostResponseDto>> GetPostsAsync(int pageNumber, int pageSize)
         {
             var posts = await _context.Posts
+                .Where(p => !p.IsDraft) // Only show published posts
                 .Include(p => p.User)
                 .Include(p => p.Comments)
                 .Include(p => p.PostLikes)
-                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.PublishedAt ?? p.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -56,7 +57,9 @@ namespace MicrobloggingSystem.Services
                 MediaPath = createPostDto.MediaPath,
                 MediaType = createPostDto.MediaType,
                 UserId = createPostDto.UserId,
-                CreatedAt = DateTime.UtcNow
+                IsDraft = createPostDto.IsDraft,
+                CreatedAt = DateTime.UtcNow,
+                PublishedAt = createPostDto.IsDraft ? null : DateTime.UtcNow
             };
 
             _context.Posts.Add(post);
@@ -72,11 +75,20 @@ namespace MicrobloggingSystem.Services
                 return false;
             }
 
+            var wasDraft = post.IsDraft;
             post.Content = updatePostDto.Content;
             post.GameTitle = updatePostDto.GameTitle;
             post.PostType = updatePostDto.PostType ?? post.PostType;
             post.MediaPath = updatePostDto.MediaPath ?? post.MediaPath;
             post.MediaType = updatePostDto.MediaType ?? post.MediaType;
+            post.IsDraft = updatePostDto.IsDraft;
+
+            // Set PublishedAt when transitioning from draft to published
+            if (wasDraft && !updatePostDto.IsDraft && post.PublishedAt == null)
+            {
+                post.PublishedAt = DateTime.UtcNow;
+            }
+
             await _context.SaveChangesAsync();
             return true;
         }
@@ -107,11 +119,11 @@ namespace MicrobloggingSystem.Services
             }
 
             var posts = await _context.Posts
-                .Where(p => followedIds.Contains(p.UserId) || p.UserId == userId)
+                .Where(p => (followedIds.Contains(p.UserId) || p.UserId == userId) && !p.IsDraft)
                 .Include(p => p.User)
                 .Include(p => p.Comments)
                 .Include(p => p.PostLikes)
-                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.PublishedAt ?? p.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -122,6 +134,7 @@ namespace MicrobloggingSystem.Services
         public async Task<IEnumerable<PostResponseDto>> SearchPostsAsync(string query, string? gameTitle = null, string? postType = null, int pageNumber = 1, int pageSize = 20)
         {
             var postsQuery = _context.Posts
+                .Where(p => !p.IsDraft) // Only search published posts by default
                 .Include(p => p.User)
                 .Include(p => p.Comments)
                 .Include(p => p.PostLikes)
@@ -148,12 +161,41 @@ namespace MicrobloggingSystem.Services
             }
 
             var posts = await postsQuery
-                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.PublishedAt ?? p.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
             return posts.Select(post => ToDto(post)).ToList();
+        }
+
+        public async Task<IEnumerable<PostResponseDto>> GetDraftsAsync(string userId, int pageNumber = 1, int pageSize = 20)
+        {
+            var drafts = await _context.Posts
+                .Where(p => p.UserId == userId && p.IsDraft)
+                .Include(p => p.User)
+                .Include(p => p.Comments)
+                .Include(p => p.PostLikes)
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return drafts.Select(post => ToDto(post)).ToList();
+        }
+
+        public async Task<bool> PublishDraftAsync(int postId)
+        {
+            var post = await _context.Posts.FindAsync(postId);
+            if (post == null || !post.IsDraft)
+            {
+                return false;
+            }
+
+            post.IsDraft = false;
+            post.PublishedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         private static PostResponseDto ToDto(Post post, ApplicationUser? user = null)
@@ -172,6 +214,8 @@ namespace MicrobloggingSystem.Services
                 MediaPath = post.MediaPath,
                 MediaType = post.MediaType,
                 CreatedAt = post.CreatedAt,
+                PublishedAt = post.PublishedAt,
+                IsDraft = post.IsDraft,
                 CommentsCount = post.Comments?.Count ?? 0,
                 LikesCount = post.PostLikes?.Count ?? 0,
                 UserId = post.UserId,

@@ -111,6 +111,10 @@
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
+                            <a asp-controller="PostsMvc" asp-action="Drafts" class="topbar-link">
+                                <i class="fas fa-edit"></i>
+                                <span>Drafts</span>
+                            </a>
                             <a asp-controller="Account" asp-action="Profile" class="topbar-link">
                                 <i class="fas fa-user"></i>
                                 <span>Profile</span>

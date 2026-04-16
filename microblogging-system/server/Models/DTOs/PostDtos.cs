@@ -11,6 +11,7 @@ namespace MicrobloggingSystem.Models.DTOs
         public string? MediaPath { get; set; }
         public string? MediaType { get; set; }
         public string UserId { get; set; } = string.Empty;
+        public bool IsDraft { get; set; } = false;
     }
 
     public class UpdatePostDto
@@ -24,6 +25,7 @@ namespace MicrobloggingSystem.Models.DTOs
         public string? PostType { get; set; }
         public string? MediaPath { get; set; }
         public string? MediaType { get; set; }
+        public bool IsDraft { get; set; } = false;
     }
 
     public class PostResponseDto
@@ -35,6 +37,8 @@ namespace MicrobloggingSystem.Models.DTOs
         public string? MediaPath { get; set; }
         public string? MediaType { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? PublishedAt { get; set; }
+        public bool IsDraft { get; set; }
         public int CommentsCount { get; set; }
         public int LikesCount { get; set; }
         
